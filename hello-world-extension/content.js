@@ -1,28 +1,29 @@
-// Listen for mouseup events (when the user stops highlighting)
+const analyzeButton = Object.assign(document.createElement("button"), {className: `analyze-button`});
+analyzeButton.innerText = "Analyze";
+analyzeButton.style.position = "absolute";
+analyzeButton.style.zIndex = 1000;
+analyzeButton.style.backgroundColor = "#4CAF50";
+analyzeButton.style.color = "white";
+analyzeButton.style.border = "none";
+analyzeButton.style.padding = "5px 10px";
+analyzeButton.style.borderRadius = "5px";
+analyzeButton.style.cursor = "pointer";
+
 document.addEventListener("mouseup", (event) => {
     const selectedText = window.getSelection().toString().trim();
     if (selectedText) {
-      // Create and position the "Analyze" button
-      const analyzeButton = document.createElement("button");
-      analyzeButton.innerText = "Analyze";
-      analyzeButton.style.position = "absolute";
+      console.log(selectedText);
       analyzeButton.style.left = `${event.pageX}px`;
       analyzeButton.style.top = `${event.pageY}px`;
-      analyzeButton.style.zIndex = 1000;
-      analyzeButton.style.backgroundColor = "#4CAF50";
-      analyzeButton.style.color = "white";
-      analyzeButton.style.border = "none";
-      analyzeButton.style.padding = "5px 10px";
-      analyzeButton.style.borderRadius = "5px";
-      analyzeButton.style.cursor = "pointer";
-  
-      // Add click event to the button
-      analyzeButton.addEventListener("click", () => {
-        analyzeText(selectedText);
-        document.body.removeChild(analyzeButton); // Remove the button after clicking
-      });
-  
-      document.body.appendChild(analyzeButton);
+      if (!document.body.contains(analyzeButton)) { 
+        document.body.appendChild(analyzeButton);
+        analyzeButton.addEventListener("click", () => {
+          analyzeText(selectedText);
+          document.body.removeChild(analyzeButton);
+        });
+      } 
+    } else if (document.body.contains(analyzeButton)) { 
+      document.body.removeChild(analyzeButton); 
     }
   });
   
