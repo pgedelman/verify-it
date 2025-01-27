@@ -1,0 +1,24 @@
+{
+    "manifest_version": 3,
+    "name": "Fake News Analyzer",
+    "version": "1.0",
+    "description": "Analyze highlighted text to detect fake news.",
+    "permissions": ["activeTab", "scripting"],
+    "host_permissions": ["<all_urls>"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup/popup.html",
+      "default_icon": {
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+      }
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"]
+      }
+    ]
+  }
