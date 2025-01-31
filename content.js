@@ -128,33 +128,35 @@ analyzeButton.style.borderRadius = "5px";
 analyzeButton.style.cursor = "pointer";
 
 document.addEventListener("mouseup", (event) => {
-    const selectedText = window.getSelection().toString().trim();
-    if (selectedText) {
-      console.log(selectedText);
-      analyzeButton.style.left = `${event.pageX}px`;
-      analyzeButton.style.top = `${event.pageY}px`;
-      if (!document.body.contains(analyzeButton)) { 
-        document.body.appendChild(analyzeButton);
-        analyzeButton.addEventListener("click", () => {
-          analyzeText(selectedText);
-          document.body.removeChild(analyzeButton);
-        });
-      } 
-    } else if (document.body.contains(analyzeButton)) { 
-      document.body.removeChild(analyzeButton); 
-    }
-  });
-  
-  async function analyzeText(text) {
-    try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-      const prompt = `Is this information true: ${text} ?`;
-
-      const result = await model.generateContent(prompt);
-      console.log(result.response.text());
-    } catch (error) {
-      console.error("Error analyzing text:", error);
-      alert("Failed to analyze text. Please try again.");
-    }
+  const selectedText = window.getSelection().toString().trim();
+  if (event.target === analyzeButton) {
+    console.log(selectedText);
+    analyzeText(selectedText);
+    document.body.removeChild(analyzeButton);
+    return;
   }
+  if (selectedText) {
+    analyzeButton.style.left = `${event.pageX}px`;
+    analyzeButton.style.top = `${event.pageY}px`;
+    if (!document.body.contains(analyzeButton)) {
+      document.body.appendChild(analyzeButton);
+    }
+  } else if (document.body.contains(analyzeButton)) {
+    document.body.removeChild(analyzeButton);
+  }
+});
+
+
+async function analyzeText(text) {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `Is this information true: ${text} ?`;
+
+    const result = await model.generateContent(prompt);
+    console.log(result.response.text());
+  } catch (error) {
+    console.error("Error analyzing text:", error);
+    alert("Failed to analyze text. Please try again.");
+  }
+}
