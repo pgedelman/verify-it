@@ -1,167 +1,183 @@
-// Pink Icon Bubble Code
-const pinkBubble = Object.assign(document.createElement("div"), {
-    className: "pink-bubble",
-  });
-  pinkBubble.style.width = "60px";
-  pinkBubble.style.height = "60px";
-  pinkBubble.style.position = "fixed";
-  pinkBubble.style.bottom = "100px"; // Initial position
-  pinkBubble.style.right = "100px"; // Initial position
-  pinkBubble.style.backgroundColor = "#f8d7da"; // Pink background
-  pinkBubble.style.borderRadius = "50%"; // Circle shape
-  pinkBubble.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-  pinkBubble.style.display = "flex";
-  pinkBubble.style.justifyContent = "center";
-  pinkBubble.style.alignItems = "center";
-  pinkBubble.style.cursor = "grab";
-  pinkBubble.style.zIndex = 9999; // Ensures it's always on top
-  pinkBubble.style.userSelect = "none"; // Prevents text selection
-  pinkBubble.style.pointerEvents = "auto"; // Ensure it interacts with the mouse
-  
-  // Add an icon to the pink bubble
-  const bubbleIcon = Object.assign(document.createElement("img"), {
-    src: "your-icon.png", // Replace with the actual path to your icon
-    alt: "Icon",
-  });
-  bubbleIcon.style.width = "50%";
-  bubbleIcon.style.height = "50%";
-  pinkBubble.appendChild(bubbleIcon);
-  
-  // Add the pink bubble to the page
+// Immediately inject CSS styles into the document
+(function() {
+    const style = document.createElement("style");
+    style.textContent = `
+      /* Basic pink bubble styling */
+      .pink-bubble {
+        width: 60px;
+        height: 60px;
+        position: fixed;
+        bottom: 100px;
+        right: 100px;
+        background-color: #f8d7da;
+        border-radius: 50%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        z-index: 9999;
+        user-select: none;
+        pointer-events: auto;
+        transition: width 0.3s ease, height 0.3s ease, border-radius 0.3s ease;
+        overflow: hidden;
+      }
+      
+      /* Expanded state: transforms the circle into a rounded rectangle */
+      .pink-bubble.expanded {
+        width: 320px;
+        height: 120px;
+        border-radius: 10px;
+      }
+      
+      /* Drag boundary (only visible during dragging) */
+      .drag-boundary {
+        position: fixed;
+        top: 50px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 2px dashed rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        z-index: 9998;
+        display: none;
+        pointer-events: none;
+      }
+      
+      /* Text container inside the expanded bubble */
+      .bubble-text {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        font-size: 14px;
+        color: #000;
+        padding: 10px;
+        white-space: pre-wrap;  /* Preserve whitespace */
+        overflow-wrap: break-word;
+        height: 100%;
+        width: 100%;
+      }
+      
+      /* Class to make text visible */
+      .bubble-text.visible {
+        opacity: 1;
+      }
+    `;
+    document.head.appendChild(style);
+  })();
+    
+  // Create the pink bubble element
+  const pinkBubble = document.createElement("div");
+  pinkBubble.className = "pink-bubble";
   document.body.appendChild(pinkBubble);
-  
-  // Drag-and-drop functionality for the pink bubble
+    
+  // Create and append the drag boundary element
+  const dragBoundary = document.createElement("div");
+  dragBoundary.className = "drag-boundary";
+  document.body.appendChild(dragBoundary);
+    
+  // Create the text container inside the bubble
+  const bubbleText = document.createElement("div");
+  bubbleText.className = "bubble-text";
+  pinkBubble.appendChild(bubbleText);
+    
+  // Disable (and later re-enable) text selection during dragging
+  const disableTextSelection = () => {
+    document.body.style.userSelect = "none";
+  };
+  const enableTextSelection = () => {
+    document.body.style.userSelect = "";
+  };
+    
+  // --- Drag-and-Drop Functionality ---
   let isDragging = false;
   let offsetX, offsetY;
-  
-  // Create the drag boundary
-  const dragBoundary = Object.assign(document.createElement("div"), {
-    className: "drag-boundary",
-  });
-  dragBoundary.style.position = "fixed";
-  dragBoundary.style.top = "50px"; // Adjust to keep below the search bar
-  dragBoundary.style.left = "0";
-  dragBoundary.style.right = "0";
-  dragBoundary.style.bottom = "0";
-  dragBoundary.style.border = "2px dashed rgba(0, 0, 0, 0.3)";
-  dragBoundary.style.borderRadius = "10px";
-  dragBoundary.style.zIndex = 9998;
-  dragBoundary.style.display = "none"; // Initially hidden
-  dragBoundary.style.pointerEvents = "none"; // Non-interactive
-  
-  document.body.appendChild(dragBoundary);
-  
-  // Prevent text selection during drag
-  const disableTextSelection = () => {
-    document.body.style.userSelect = "none"; // Disable text selection globally
-  };
-  
-  const enableTextSelection = () => {
-    document.body.style.userSelect = ""; // Re-enable text selection
-  };
-  
-  // Start dragging
+    
   pinkBubble.addEventListener("mousedown", (event) => {
-    isDragging = true;
-    offsetX = event.clientX - pinkBubble.getBoundingClientRect().left;
-    offsetY = event.clientY - pinkBubble.getBoundingClientRect().top;
-    pinkBubble.style.cursor = "grabbing";
-  
-    // Show the drag boundary
-    dragBoundary.style.display = "block";
-  
-    // Disable text selection during drag
-    disableTextSelection();
+    // Only start dragging if the bubble is not expanded (to avoid interfering with text)
+    if (!pinkBubble.classList.contains("expanded")) {
+      isDragging = true;
+      offsetX = event.clientX - pinkBubble.getBoundingClientRect().left;
+      offsetY = event.clientY - pinkBubble.getBoundingClientRect().top;
+      pinkBubble.style.cursor = "grabbing";
+    
+      // Show the drag boundary
+      dragBoundary.style.display = "block";
+    
+      disableTextSelection();
+    }
   });
-  
-  // Move the bubble and update the placement indicator
+    
   document.addEventListener("mousemove", (event) => {
     if (isDragging) {
       const x = event.clientX - offsetX;
       const y = event.clientY - offsetY;
-  
-      // Constrain within the boundaries
+    
+      // Constrain movement within the drag boundary
       const boundary = dragBoundary.getBoundingClientRect();
-      const iconWidth = pinkBubble.offsetWidth;
-      const iconHeight = pinkBubble.offsetHeight;
-  
-      let newX = Math.min(Math.max(boundary.left, x), boundary.right - iconWidth);
-      let newY = Math.min(Math.max(boundary.top, y), boundary.bottom - iconHeight);
-  
-      pinkBubble.style.left = `${newX}px`;
-      pinkBubble.style.top = `${newY}px`;
+      const bubbleWidth = pinkBubble.offsetWidth;
+      const bubbleHeight = pinkBubble.offsetHeight;
+    
+      let newX = Math.min(Math.max(boundary.left, x), boundary.right - bubbleWidth);
+      let newY = Math.min(Math.max(boundary.top, y), boundary.bottom - bubbleHeight);
+    
+      pinkBubble.style.left = newX + "px";
+      pinkBubble.style.top = newY + "px";
     }
   });
-  
-  // Stop dragging
+    
   document.addEventListener("mouseup", () => {
     if (isDragging) {
       isDragging = false;
       pinkBubble.style.cursor = "grab";
-  
-      // Hide the drag boundary
       dragBoundary.style.display = "none";
-  
-      // Re-enable text selection after drag
       enableTextSelection();
     }
   });
-  
-  // Prevent highlighting text on the icon itself
+    
+  // Prevent accidental text selection on the bubble
   pinkBubble.addEventListener("mousedown", (event) => {
     event.preventDefault();
   });
-
-// Create the text container as a horizontal popup
-const bubbleText = Object.assign(document.createElement("div"), {
-    className: "bubble-text",
-  });
-  bubbleText.style.position = "absolute";
-  bubbleText.style.width = "auto"; // Dynamic width
-  bubbleText.style.maxWidth = "300px"; // Limit max width
-  bubbleText.style.minHeight = "40px"; // Minimum height
-  bubbleText.style.backgroundColor = "#fff";
-  bubbleText.style.color = "#000";
-  bubbleText.style.padding = "10px";
-  bubbleText.style.borderRadius = "10px";
-  bubbleText.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-  bubbleText.style.display = "none"; // Initially hidden
-  bubbleText.style.fontSize = "14px";
-  bubbleText.style.overflowWrap = "break-word"; // Break long words
-  bubbleText.style.whiteSpace = "normal"; // Allow normal wrapping
-  bubbleText.style.transition = "all 0.3s ease";
-  bubbleText.style.zIndex = "9999";
-  bubbleText.style.left = "70px"; // Position the popup to the right of the pink bubble
-  bubbleText.style.top = "50%"; // Center align vertically relative to bubble
-  bubbleText.style.transform = "translateY(-50%)"; // Adjust for perfect centering
-  
-  // Append the text box to the pink bubble
-  pinkBubble.appendChild(bubbleText);
-  
-  // Listen for the analysis result
-  window.addEventListener("message", (event) => {
-    if (event.data.type === "ANALYSIS_RESULT") {
-      const resultText = event.data.data;
-  
-      // Format the resultText to add spaces (if necessary)
-      const formattedText = resultText.replace(/(?<=\w)(?=[A-Z])/g, " "); // Example regex for formatting camel case
-  
-      // Show and update the text box
-      bubbleText.innerText = ""; // Clear previous text
-      bubbleText.style.display = "block"; // Show the text box
-  
-      let index = 0;
-      function typeWriterEffect() {
-        if (index < formattedText.length) {
-          bubbleText.innerText += formattedText.charAt(index);
-          index++;
-          setTimeout(typeWriterEffect, 50); // Adjust speed
-        }
+    
+  // --- Utility: Format the Text ---
+  // This function adds spaces between a lowercase (or digit) and an uppercase letter,
+  // and removes asterisks (which might be used for emphasis in markdown)
+  function formatText(text) {
+    let formatted = text.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
+    formatted = formatted.replace(/\*(.*?)\*/g, "$1");
+    return formatted;
+  }
+    
+  // --- Utility: Typewriter Effect ---
+  function typeWriter(text, element, speed = 50) {
+    element.innerText = "";
+    let index = 0;
+    function type() {
+      if (index < text.length) {
+        element.innerText += text.charAt(index);
+        index++;
+        setTimeout(type, speed);
       }
-  
-      // Start typing animation
-      typeWriterEffect();
+    }
+    type();
+  }
+    
+  // --- Listen for the Analysis Result Message ---
+  // When a message of type "ANALYSIS_RESULT" is received, the bubble will expand
+  // and then display the formatted text inside using a typewriter effect.
+  window.addEventListener("message", (event) => {
+    if (event.data && event.data.type === "ANALYSIS_RESULT") {
+      const resultText = event.data.data;
+      const formattedText = formatText(resultText);
+    
+      // Expand the bubble by adding the "expanded" class
+      pinkBubble.classList.add("expanded");
+    
+      // After the bubble expansion transition completes (300ms), show the text
+      setTimeout(() => {
+        bubbleText.classList.add("visible");
+        typeWriter(formattedText, bubbleText, 50);
+      }, 300);
     }
   });
-  
-  
+    
