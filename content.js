@@ -38,7 +38,15 @@ async function analyzeText(text) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `Is this information true: ${text} ?`;
+    // Improved prompt: provides clear instructions for news/politics claims,
+    // with objective analysis and reputable sources when applicable.
+    const prompt = `You are a highly analytical fact-checking AI specialized in verifying the accuracy of claims, particularly those related to recent events, politics, media, and public discourse. Analyze the following claim: "${text}".
+    
+- If this claim pertains to news, politics or media (for example, topics like "Trump's recent election", "X being controlled by Musk", or similar subjects prone to misinformation), provide an objective and detailed explanation including any reputable references or sources available.
+- If the claim does not clearly fall into these categories, perform a general factual analysis, highlighting any ambiguities or assumptions, and indicate if further verification might be necessary.
+- In all cases, conclude with a clear determination regarding the truthfulness of the claim along with a summary of the evidence or reasoning.
+
+Answer in a balanced, clear, and unbiased manner.`;
 
     const result = await model.generateContent(prompt);
     const responseText = await result.response.text();

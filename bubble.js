@@ -26,7 +26,7 @@
       /* Expanded state: transforms the circle into a rounded rectangle */
       .pink-bubble.expanded {
         width: 320px;
-        height: 120px;
+        height: 120px;  /* Minimum height when expanded */
         border-radius: 10px;
       }
       
@@ -55,6 +55,9 @@
         overflow-wrap: break-word;
         height: 100%;
         width: 100%;
+        overflow-y: auto;  /* Add vertical scrolling */
+        max-height: 100%;  /* Constrain to container height */
+        padding-right: 15px;  /* Prevent text under scrollbar */
       }
       
       /* Class to make text visible */
@@ -92,19 +95,34 @@
   let isDragging = false;
   let offsetX, offsetY;
     
+  // Add close button element
+  const closeButton = document.createElement("div");
+  closeButton.innerHTML = "×";
+  closeButton.style.cssText = `
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0 5px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    z-index: 1;
+  `;
+  closeButton.addEventListener("mouseenter", () => closeButton.style.opacity = 1);
+  closeButton.addEventListener("mouseleave", () => closeButton.style.opacity = 0.5);
+  pinkBubble.appendChild(closeButton);
+    
+  // Update the drag condition to work in both states
   pinkBubble.addEventListener("mousedown", (event) => {
-    // Only start dragging if the bubble is not expanded (to avoid interfering with text)
-    if (!pinkBubble.classList.contains("expanded")) {
-      isDragging = true;
-      offsetX = event.clientX - pinkBubble.getBoundingClientRect().left;
-      offsetY = event.clientY - pinkBubble.getBoundingClientRect().top;
-      pinkBubble.style.cursor = "grabbing";
-    
-      // Show the drag boundary
-      dragBoundary.style.display = "block";
-    
-      disableTextSelection();
-    }
+    // Remove the expanded class check to allow dragging in both states
+    if (event.target === closeButton) return; // Prevent dragging when clicking close button
+    isDragging = true;
+    offsetX = event.clientX - pinkBubble.getBoundingClientRect().left;
+    offsetY = event.clientY - pinkBubble.getBoundingClientRect().top;
+    pinkBubble.style.cursor = "grabbing";
+    dragBoundary.style.display = "block";
+    disableTextSelection();
   });
     
   document.addEventListener("mousemove", (event) => {
@@ -139,6 +157,21 @@
     event.preventDefault();
   });
     
+  // Add close functionality
+  closeButton.addEventListener("click", () => {
+    // Cancel any ongoing typewriter effect before closing
+    if (currentTypeWriter) {
+      currentTypeWriter.cancelled = true;
+      currentTypeWriter = null;
+    }
+    bubbleText.classList.remove("visible");
+    pinkBubble.classList.remove("expanded");
+    // Clear existing text after the closing transition
+    setTimeout(() => {
+      bubbleText.innerText = "";
+    }, 300);
+  });
+    
   // --- Utility: Format the Text ---
   // This function adds spaces between a lowercase (or digit) and an uppercase letter,
   // and removes asterisks (which might be used for emphasis in markdown)
@@ -150,12 +183,21 @@
     
   // --- Utility: Typewriter Effect ---
   function typeWriter(text, element, speed = 50) {
+    // Reset any previous text
     element.innerText = "";
     let index = 0;
+    // Create a controller object for cancellation
+    const controller = { cancelled: false };
+    currentTypeWriter = controller;
+
     function type() {
+      // If cancelled, stop further scheduled typings
+      if (controller.cancelled) return;
       if (index < text.length) {
         element.innerText += text.charAt(index);
         index++;
+        // Auto-scroll to bottom as text grows
+        element.scrollTop = element.scrollHeight;
         setTimeout(type, speed);
       }
     }
@@ -180,4 +222,23 @@
       }, 300);
     }
   });
+    
+  // Update CSS to handle close button and pointer events
+  const style = document.querySelector("style");
+  style.textContent += `
+    .pink-bubble.expanded {
+      height: 120px;  /* Minimum height when expanded */
+      min-height: 120px;  /* Add minimum height constraint */
+      resize: both;  /* Allow manual resizing */
+    }
+    .bubble-text {
+      pointer-events: none;
+    }
+    .bubble-text.visible {
+      pointer-events: auto;
+    }
+  `;
+    
+  // Add a global variable to control typewriter cancellation
+  let currentTypeWriter = null;
     
