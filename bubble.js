@@ -1,6 +1,12 @@
-// Immediately inject CSS styles into the document
-function injectStyles() {
-  const style = document.createElement('style');
+// Create a container element and attach a shadow root to encapsulate the bubble UI
+const bubbleContainer = document.createElement("div");
+bubbleContainer.id = "verifyit-bubble-container";
+document.body.appendChild(bubbleContainer);
+const shadow = bubbleContainer.attachShadow({ mode: "open" });
+
+// Immediately inject CSS styles into the shadow DOM for full isolation
+function injectStyles(shadowRoot) {
+  const style = document.createElement("style");
   style.textContent = `
     /* Base bubble styling */
     .pink-bubble {
@@ -18,7 +24,6 @@ function injectStyles() {
       z-index: 9999;
       user-select: none;
       pointer-events: auto;
-      /* Removed width/height transitions so resizing follows immediately */
       transition: border-radius 0.3s ease, background-color 0.3s ease;
       overflow: hidden;
       background-color: #f0f0f0;
@@ -70,7 +75,6 @@ function injectStyles() {
       white-space: pre-wrap;
       overflow-wrap: break-word;
       height: 100%;
-      /* Only the text container scrolls if text exceeds its bounds */
       overflow-y: auto;
       max-height: 100%;
       padding: 10px;
@@ -81,7 +85,7 @@ function injectStyles() {
       opacity: 1;
       display: block;
     }
-    /* Only the remaining space (after the icon) is used by the text when expanded */
+    /* When expanded, only the remaining space (after the icon) is used by the text container */
     .pink-bubble.expanded .bubble-text {
       width: calc(100% - 80px);
     }
@@ -126,20 +130,19 @@ function injectStyles() {
       z-index: 1;
     }
   `;
-  document.head.appendChild(style);
+  shadowRoot.appendChild(style);
 }
 
-// Helper function to create the bubble and its child elements
-function createBubble() {
+// Create the bubble and its child elements inside the shadow DOM
+function createBubble(shadowRoot) {
   // Create the bubble element
   const pinkBubble = document.createElement("div");
   pinkBubble.className = "pink-bubble neutral-status";
-  document.body.appendChild(pinkBubble);
+  shadowRoot.appendChild(pinkBubble);
 
   // Create the icon element
   const bubbleIcon = document.createElement("img");
   bubbleIcon.className = "bubble-icon";
-  // Use chrome.runtime.getURL for the absolute URL of the image.
   bubbleIcon.src = chrome.runtime.getURL("images/verifyit-icon.png");
   bubbleIcon.alt = "VerifyIt Icon";
   bubbleIcon.onerror = function() {
@@ -155,7 +158,7 @@ function createBubble() {
   // Create the drag boundary element
   const dragBoundary = document.createElement("div");
   dragBoundary.className = "drag-boundary";
-  document.body.appendChild(dragBoundary);
+  shadowRoot.appendChild(dragBoundary);
 
   // Create the clear button element (only for active state)
   const clearButton = document.createElement("button");
@@ -165,6 +168,9 @@ function createBubble() {
 
   return { pinkBubble, bubbleIcon, bubbleText, dragBoundary, clearButton };
 }
+
+injectStyles(shadow);
+const { pinkBubble, bubbleIcon, bubbleText, dragBoundary, clearButton } = createBubble(shadow);
 
 // --- Utility Functions ---
 
@@ -210,8 +216,6 @@ let isExpanded = false;   // Only used if the bubble is active
 let iconMouseDown = null;
 
 // --- Setup ---
-injectStyles();
-const { pinkBubble, bubbleIcon, bubbleText, dragBoundary, clearButton } = createBubble();
 
 // --- Drag-and-Drop Functionality ---
 let isDragging = false;
