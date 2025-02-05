@@ -5,8 +5,19 @@
     "description": "Analyze highlighted text to detect fake news.",
     "permissions": ["activeTab", "scripting", "contextMenus"],
     "host_permissions": ["<all_urls>"],
+    "icons": {
+      "16": "images/verifyit-icon.png",
+      "32": "images/verifyit-icon.png",
+      "48": "images/verifyit-icon.png",
+      "128": "images/verifyit-icon.png"
+    },
     "action": {
-      "default_popup": "popup/popup.html"
+      "default_popup": "popup/popup.html",
+      "default_icon": {
+        "16": "images/verifyit-icon.png",
+        "32": "images/verifyit-icon.png",
+        "48": "images/verifyit-icon.png"
+      }
     },
     "content_scripts": [
       {
@@ -17,5 +28,11 @@
     ],
     "background": {
       "service_worker": "background.js"
-    }
+    },
+    "web_accessible_resources": [
+      {
+        "resources": ["images/verifyit-icon.png"],
+        "matches": ["<all_urls>"]
+      }
+    ]
   }
