@@ -1,4 +1,38 @@
-<div id="draggable-button" class="draggable">
-    <img src="your-icon.png" alt="Icon" />
-
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Verify-It Popup</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="popup">
+    <h2>Verify-It</h2>
+    
+    <!-- Typing Speed Slider Group -->
+    <div class="control-group">
+      <label for="typing-speed-slider">Typing Speed:</label>
+      <input type="range" id="typing-speed-slider" min="1" max="10" value="5">
+    </div>
+    
+    <!-- Analyze Display Selection -->
+    <div class="control-group">
+      <p>Select Analyze Button Display:</p>
+      <button id="analyze-display-icon" class="active">Popup</button>
+      <button id="analyze-display-right-click">Right-Click</button>
+    </div>
+    
+    <!-- General Selection Dropdown -->
+    <div class="control-group">
+      <p>General Selection:</p>
+      <select id="general-selection">
+        <option value="option1">Option 1</option>
+        <option value="option2">Option 2</option>
+        <option value="option3">Option 3</option>
+      </select>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

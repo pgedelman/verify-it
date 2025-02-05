@@ -220,9 +220,10 @@ function formatText(text) {
   formatted = formatted.replace(/\*(.*?)\*/g, "$1");
   return formatted;
 }
-/*   
+    
 // --- Utility: Typewriter Effect ---
-function typeWriter(text, element, speed = 1) {
+// Now the function uses the global `currentTypingSpeed` to control the speed.
+function typeWriter(text, element) {
   // Reset any previous text
   element.innerText = "";
   let index = 0;
@@ -231,31 +232,38 @@ function typeWriter(text, element, speed = 1) {
   currentTypeWriter = controller;
 
   function type() {
-    // If cancelled, stop further scheduled typings
     if (controller.cancelled) return;
     if (index < text.length) {
       element.innerText += text.charAt(index);
       index++;
       // Auto-scroll to bottom as text grows
       element.scrollTop = element.scrollHeight;
-      setTimeout(type, speed);
+      // Calculate the delay, now with larger influence:
+      let delay = Math.max(5, 150 - currentTypingSpeed * 30);
+      setTimeout(type, delay);
     }
   }
   type();
 }
-*/
     
 // --- Utility: Amplify the Score ---
 // This function amplifies small differences from 0.5 using the specified factor.
-// For example, a slightly positive or negative score will be pushed further toward 1 or 0.
 function amplifyScore(score, factor = 2) {
   let amplified = 0.5 + (score - 0.5) * factor;
-  // Clamp the amplified score between 0 and 1
   return Math.min(Math.max(amplified, 0), 1);
 }
 
+// --- Global variable for typing speed ---
+// Initialize with a default value.
+let currentTypingSpeed = 5;
+
+// Listen for the custom event to update the typing speed
+window.addEventListener("typingSpeedChanged", function(event) {
+    currentTypingSpeed = parseInt(event.detail.typingSpeed, 10) || 5;
+    console.log("Typing speed updated in bubble.js to:", currentTypingSpeed);
+});
+    
 // --- Listen for the Analysis Result Message ---
-// Updated approach using a continuous color scale with an indicator and sensitivity amplification
 window.addEventListener("message", (event) => {
   if (event.data && event.data.type === "ANALYSIS_RESULT") {
     const resultText = event.data.data;
@@ -265,7 +273,7 @@ window.addEventListener("message", (event) => {
     pinkBubble.classList.remove("neutral-status", "true-status", "uncertain-status", "false-status");
 
     // Process truthiness into a normalized score (0 = false/red, 1 = true/green)
-    let score = 0.5; // Default uncertain state
+    let score = 0.5;
     if (typeof event.data.truthiness !== "undefined") {
       if (typeof event.data.truthiness === "boolean") {
         score = event.data.truthiness ? 1 : 0;
@@ -290,7 +298,7 @@ window.addEventListener("message", (event) => {
       }
     }
 
-    // Amplify the score for a more sensitive UI mapping (adjust factor as appropriate)
+    // Amplify the score for a more sensitive UI mapping
     score = amplifyScore(score, 3);
 
     // Set the bubble's background color: 0 (red, 0°) to 1 (green, 120°)
@@ -310,7 +318,6 @@ window.addEventListener("message", (event) => {
       indicator.className = "scale-indicator";
       scale.appendChild(indicator);
     }
-    // Position the indicator relative to the score from 0 to 100%
     indicator.style.left = (score * 100) + "%";
 
     // Expand the bubble so the scale and text become visible
@@ -319,7 +326,7 @@ window.addEventListener("message", (event) => {
     // Display the formatted text inside the bubble after the expansion transition
     setTimeout(() => {
       bubbleText.classList.add("visible");
-      bubbleText.innerText = formattedText;
+      typeWriter(formattedText, bubbleText);
     }, 300);
   }
 });
@@ -328,9 +335,9 @@ window.addEventListener("message", (event) => {
 const style = document.querySelector("style");
 style.textContent += `
   .pink-bubble.expanded {
-    height: 120px;  /* Minimum height when expanded */
-    min-height: 120px;  /* Add minimum height constraint */
-    resize: both;  /* Allow manual resizing */
+    height: 120px;
+    min-height: 120px;
+    resize: both;
   }
   .bubble-text {
     pointer-events: none;
@@ -340,6 +347,6 @@ style.textContent += `
   }
 `;
 
-// Add a global variable to control typewriter cancellation
+// Global variable for typewriter cancellation
 let currentTypeWriter = null;
     

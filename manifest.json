@@ -3,7 +3,7 @@
     "name": "Fake News Analyzer",
     "version": "1.0",
     "description": "Analyze highlighted text to detect fake news.",
-    "permissions": ["activeTab", "scripting"],
+    "permissions": ["activeTab", "scripting", "contextMenus"],
     "host_permissions": ["<all_urls>"],
     "action": {
       "default_popup": "popup/popup.html"
@@ -14,5 +14,8 @@
         "js": ["dist/content.js", "bubble.js"],
         "css": ["popup/popup.css"]
       }
-    ]
+    ],
+    "background": {
+      "service_worker": "background.js"
+    }
   }
