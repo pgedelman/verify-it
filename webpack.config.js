@@ -4,9 +4,9 @@ const Dotenv = require('dotenv-webpack');
 
 module.exports = {
   mode: 'production',
-  entry: './content.js', // Path to your source content script
+  entry: './scripts/content/content.js', // Path to your source content script
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'scripts/dist'),
     filename: 'content.js', // Bundled content script output
   },
   resolve: {
