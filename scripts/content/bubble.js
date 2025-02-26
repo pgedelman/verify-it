@@ -56,7 +56,7 @@ function injectStyles(shadowRoot) {
       left: 10px;
       margin: 0;
     }
-    /* Updated Clear button styling - positioned UNDER the icon with proper width */
+    /* Updated Clear button styling - positioned UNDER the icon */
     .clear-button {
       position: absolute;
       top: 50px; /* Positioned below the icon */
@@ -69,73 +69,111 @@ function injectStyles(shadowRoot) {
       border-radius: 4px;
       cursor: pointer;
       z-index: 1;
-      min-width: 50px; /* Increased from 30px to fit text */
+      min-width: 50px;
       text-align: center;
     }
     .clear-button:hover {
       background-color: #e8e8e8;
     }
-    /* Updated truthiness scale - placed with better spacing */
+    /* Expand/Shrink button styling - positioned below the clear button */
+    .expand-button {
+      position: absolute;
+      top: 85px; /* Positioned below the clear button */
+      left: 10px; /* Aligned with icon and clear button */
+      display: none;
+      padding: 5px 10px;
+      font-size: 12px;
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 1;
+      min-width: 50px;
+      text-align: center;
+    }
+    .expand-button:hover {
+      background-color: #e8e8e8;
+    }
+    /* Modern truthiness scale with notch indicator */
     .truthiness-scale {
       position: absolute;
       top: 10px; /* Aligned with the top of the bubble icon */
-      left: 70px; /* Increased from 50px to create better gap from icon/button */
-      width: 15px; /* Slightly wider for better visibility */
-      height: 150px; /* Increased from 100px to better match bubble height */
-      background-color: #eee;
-      border-radius: 4px;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-      overflow: hidden;
+      left: 80px; /* Adjusted to avoid overlap */
+      width: 12px; /* Slimmer width for more modern look */
+      height: 150px; /* Match bubble height */
+      border-radius: 8px;
+      overflow: visible; /* Allow notch to overflow */
       display: none;
-    }
-    .scale-fill {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 50%;
       background: linear-gradient(
         to top,
         #ff5252 0%,    /* Red for false */
         #ffeb3b 50%,   /* Yellow for uncertain */
         #4caf50 100%   /* Green for true */
       );
-      border-radius: 4px;
-      transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 2; /* Ensure it's above the background */
     }
-    /* Updated Bubble text styling - adjusted for new scale position */
-    .bubble-text {
-      opacity: 0;
-      transition: opacity 0.3s ease;
+    /* Modern notch indicator styling */
+    .notch-indicator {
+      position: absolute;
+      left: 50%; /* Center horizontally */
+      transform: translateX(-50%) translateY(-50%); /* Center on both axes */
+      width: 18px;
+      height: 8px; /* Thinner for more modern look */
+      background-color: #fff;
+      border-radius: 4px;
+      transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+    /* Notch shadow styling for better visual depth */
+    .notch-indicator::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+      box-shadow: inset 0 1px 1px rgba(0,0,0,0.1);
+    }
+    /* Container for text content – scrolls as one */
+    .bubble-content {
+      position: absolute;
+      top: 6px;
+      left: 110px; /* More room so text doesn't overlap scale */
+      right: 10px;
+      bottom: 10px;
+      overflow-y: auto;
+      padding-right: 10px;
+      z-index: 1; /* Below scale, but above background */
+    }
+    /* Summary text styling (first two sentences) */
+    .bubble-summary {
       font-size: 14px;
       color: #000;
       white-space: pre-wrap;
       overflow-wrap: break-word;
-      height: 100%;
-      overflow-y: auto;
-      max-height: 100%;
+      margin: 0;
+    }
+    /* Detailed text styling (rest of the content) */
+    .bubble-details {
+      font-size: 14px;
+      color: #000;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      margin-top: 5px;  /* Reduced gap */
+      border-top: 1px solid #eee;
+      padding-top: 5px; /* Reduced gap */
+    }
+    /* Hide detailed text by default in the expanded bubble */
+    .bubble-details.hidden {
       display: none;
-    }
-    .bubble-text.visible {
-      opacity: 1;
-      display: block;
-    }
-    .pink-bubble.expanded .bubble-text {
-      margin: 10px;
-      padding: 0 10px;
-      width: calc(100% - 100px); /* Adjusted for the larger scale width */
-      height: calc(100% - 20px);
-      position: absolute;
-      left: 95px; /* Positioned to the right of the truthiness scale */
-      top: 6px; /* Changed from 10px to 8px to move text slightly higher */
     }
     .pink-bubble.neutral-status { background-color: #f0f0f0; }
     .pink-bubble.true-status { background-color: #d4edda; }
     .pink-bubble.uncertain-status { background-color: #fff3cd; }
     .pink-bubble.false-status { background-color: #f8d7da; }
-    .bubble-text { pointer-events: none; }
-    .bubble-text.visible { pointer-events: auto; }
     /* Updated drag boundary styling to cover the full viewport */
     .drag-boundary {
       position: fixed;
@@ -153,7 +191,6 @@ function injectStyles(shadowRoot) {
   shadowRoot.appendChild(style);
 }
 
-// The rest of the code remains the same as your original implementation
 // Create the bubble and its child elements inside the shadow DOM
 function createBubble(shadowRoot) {
   // Create the bubble element
@@ -176,32 +213,71 @@ function createBubble(shadowRoot) {
   clearButton.className = "clear-button";
   clearButton.textContent = "Clear";
   pinkBubble.appendChild(clearButton);
+  
+  // Create the expand/shrink button
+  const expandButton = document.createElement("button");
+  expandButton.className = "expand-button";
+  expandButton.textContent = "Expand";
+  pinkBubble.appendChild(expandButton);
 
   // Create the truthiness scale
   const truthinessScale = document.createElement("div");
   truthinessScale.className = "truthiness-scale";
   pinkBubble.appendChild(truthinessScale);
   
-  // Create the scale fill element
-  const scaleFill = document.createElement("div");
-  scaleFill.className = "scale-fill";
-  truthinessScale.appendChild(scaleFill);
+  // Create the notch indicator element
+  const notchIndicator = document.createElement("div");
+  notchIndicator.className = "notch-indicator";
+  notchIndicator.style.top = "50%"; // Default position (uncertain)
+  truthinessScale.appendChild(notchIndicator);
+  
+  // Create a container for both summary and details so they scroll together
+  const bubbleContent = document.createElement("div");
+  bubbleContent.className = "bubble-content";
+  pinkBubble.appendChild(bubbleContent);
 
-  // Create the text container element
-  const bubbleText = document.createElement("div");
-  bubbleText.className = "bubble-text";
-  pinkBubble.appendChild(bubbleText);
+  // Create the summary text container (for first two sentences)
+  const bubbleSummary = document.createElement("div");
+  bubbleSummary.className = "bubble-summary";
+  bubbleContent.appendChild(bubbleSummary);
+  
+  // Create the detailed text container (for the rest of the content)
+  const bubbleDetails = document.createElement("div");
+  bubbleDetails.className = "bubble-details hidden"; // hidden by default
+  bubbleContent.appendChild(bubbleDetails);
 
   // Create the drag boundary element
   const dragBoundary = document.createElement("div");
   dragBoundary.className = "drag-boundary";
   shadowRoot.appendChild(dragBoundary);
 
-  return { pinkBubble, bubbleIcon, bubbleText, dragBoundary, clearButton, truthinessScale, scaleFill };
+  return { 
+    pinkBubble, 
+    bubbleIcon, 
+    bubbleSummary,
+    bubbleDetails,
+    bubbleContent,
+    dragBoundary, 
+    clearButton,
+    expandButton,
+    truthinessScale, 
+    notchIndicator
+  };
 }
 
 injectStyles(shadow);
-const { pinkBubble, bubbleIcon, bubbleText, dragBoundary, clearButton, truthinessScale, scaleFill } = createBubble(shadow);
+const { 
+  pinkBubble, 
+  bubbleIcon, 
+  bubbleSummary,
+  bubbleDetails,
+  bubbleContent,
+  dragBoundary, 
+  clearButton,
+  expandButton,
+  truthinessScale, 
+  notchIndicator
+} = createBubble(shadow);
 
 // --- Utility Functions ---
 
@@ -242,6 +318,7 @@ let currentTypeWriter = null;
 let currentTypingSpeed = 5;
 let bubbleState = "idle"; // 'idle' or 'active'
 let isExpanded = false;   // Only used if the bubble is active
+let isDetailsExpanded = false; // Track if details are expanded
 
 // --- Global variable to detect drag versus click on the bubble icon ---
 let iconMouseDown = null;
@@ -252,8 +329,7 @@ let iconMouseDown = null;
 let isDragging = false;
 let offsetX, offsetY;
 
-// Use a helper function to check if the mousedown happened in the native resizer area.
-// We assume a 16px square at the bottom-right corner.
+// Helper function to check if the mousedown happened in the native resizer area.
 function isInResizerArea(event) {
   const rect = pinkBubble.getBoundingClientRect();
   return (event.clientX > rect.right - 16 && event.clientY > rect.bottom - 16);
@@ -325,14 +401,23 @@ bubbleIcon.addEventListener("click", (event) => {
       pinkBubble.style.height = "";
       pinkBubble.style.borderRadius = "";
       pinkBubble.classList.add("expanded");
-      bubbleText.classList.add("visible");
+      // Ensure the text container is visible
+      bubbleContent.style.display = "block";
       clearButton.style.display = "block";
+      expandButton.style.display = "block";
       truthinessScale.style.display = "block";
+      
+      // Show details if they were previously expanded
+      if (isDetailsExpanded) {
+        bubbleDetails.classList.remove("hidden");
+      }
     } else {
       // Transition to minimized state
       pinkBubble.classList.remove("expanded");
-      bubbleText.classList.remove("visible");
+      // Hide the detailed content and reset controls
+      bubbleDetails.classList.add("hidden");
       clearButton.style.display = "none";
+      expandButton.style.display = "none";
       truthinessScale.style.display = "none";
       // Force idle sizing inline for a perfect circle
       pinkBubble.style.width = "60px";
@@ -342,17 +427,35 @@ bubbleIcon.addEventListener("click", (event) => {
   }
 });
 
+// --- Expand/Shrink Button Functionality ---
+expandButton.addEventListener("click", (event) => {
+  event.stopPropagation();
+  
+  isDetailsExpanded = !isDetailsExpanded;
+  
+  if (isDetailsExpanded) {
+    expandButton.textContent = "Shrink";
+    bubbleDetails.classList.remove("hidden");
+  } else {
+    expandButton.textContent = "Expand";
+    bubbleDetails.classList.add("hidden");
+  }
+});
+
 // --- Clear Button Functionality --- 
 clearButton.addEventListener("click", (event) => {
   event.stopPropagation();
   
   // Clear the text and revert the bubble to idle state
-  bubbleText.innerText = "";
-  bubbleText.classList.remove("visible");
+  bubbleSummary.innerText = "";
+  bubbleDetails.innerText = "";
   pinkBubble.classList.remove("expanded");
   bubbleState = "idle";
   isExpanded = false;
+  isDetailsExpanded = false;
   clearButton.style.display = "none";
+  expandButton.style.display = "none";
+  expandButton.textContent = "Expand";
   truthinessScale.style.display = "none";
   
   // Reset inline dimensions for the idle (circular) look
@@ -365,43 +468,41 @@ clearButton.addEventListener("click", (event) => {
 window.addEventListener("message", (event) => {
   if (event.data && event.data.type === "ANALYSIS_RESULT") {
     const resultText = event.data.data;
-    const formattedText = formatText(resultText);
-
+    
+    // Split the text into sentences
+    const sentences = resultText.split(/(?<=[.!?])\s+/);
+    
+    // Combine first two sentences into summary paragraph
+    let summaryText = "";
+    if (sentences.length >= 2) {
+      summaryText = sentences[0] + " " + sentences[1];
+    } else {
+      summaryText = sentences[0] || "";
+    }
+    
+    // Get the rest of the text as details (if any)
+    let detailsText = "";
+    if (sentences.length > 2) {
+      detailsText = resultText.substring(summaryText.length).trim();
+    }
+    
     // Process the truthiness score
     let score = 0.5; // Default to uncertain
     if (typeof event.data.truthiness !== "undefined") {
-      if (typeof event.data.truthiness === "boolean") {
-        score = event.data.truthiness ? 1 : 0;
-      } else if (typeof event.data.truthiness === "string") {
-        if (event.data.truthiness.endsWith("%")) {
-          score = parseFloat(event.data.truthiness) / 100;
-        } else {
-          switch (event.data.truthiness.toLowerCase()) {
-            case "true":
-              score = 1;
-              break;
-            case "false":
-              score = 0;
-              break;
-            case "uncertain":
-            default:
-              score = 0.5;
-          }
-        }
-      } else if (typeof event.data.truthiness === "number") {
-        score = Math.min(Math.max(event.data.truthiness, 0), 1);
-      }
+      score = Math.min(Math.max(event.data.truthiness, 0), 1);
     }
     
     // Amplify the score to emphasize differences
     score = amplifyScore(score, 3);
 
-    // Update the scale fill height based on the score
-    scaleFill.style.height = `${score * 100}%`;
+    // Update the notch indicator position based on the score
+    const notchPosition = (1 - score) * 100;
+    notchIndicator.style.top = `${notchPosition}%`;
     
     // Set bubble to active state and auto-expand
     bubbleState = "active";
     isExpanded = true;
+    isDetailsExpanded = false; // Start with details collapsed
     
     // Clear any inline sizing for proper expansion
     pinkBubble.style.width = "";
@@ -409,16 +510,27 @@ window.addEventListener("message", (event) => {
     pinkBubble.style.borderRadius = "";
     pinkBubble.classList.add("expanded");
     
-    // Display all elements
-    bubbleText.classList.add("visible");
+    // Initialize text content
+    bubbleSummary.innerText = "";
+    bubbleDetails.innerText = "";
+    
+    // Hide details initially
+    bubbleDetails.classList.add("hidden");
+    
+    // Display controls
     clearButton.style.display = "block";
+    expandButton.style.display = "block";
+    expandButton.textContent = "Expand"; // Reset to "Expand"
     truthinessScale.style.display = "block";
     
-    // Type the analysis result
+    // Start typewriter effect for summary text
     if (currentTypeWriter) {
       currentTypeWriter.cancelled = true;
     }
-    typeWriter(formattedText, bubbleText);
+    typeWriter(summaryText, bubbleSummary);
+    
+    // Set the details text without typewriter effect
+    bubbleDetails.innerText = detailsText;
   }
 });
 
