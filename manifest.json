@@ -3,7 +3,7 @@
     "name": "Fake News Analyzer",
     "version": "1.0",
     "description": "Analyze highlighted text to detect fake news.",
-    "permissions": ["activeTab", "scripting", "contextMenus"],
+    "permissions": ["activeTab", "scripting", "contextMenus", "storage"],
     "host_permissions": ["<all_urls>"],
     "icons": {
       "16": "images/verifyit-icon.png",

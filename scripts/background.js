@@ -43,6 +43,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       removeContextMenu();
     }
 
+    // Store the setting in chrome.storage.local
+    chrome.storage.local.set({ analyzeDisplay: message.show ? "right-click" : "icon" });
+
     // Relay the new analyze display setting to the content script.
     const displayType = message.show ? "right-click" : "icon";
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -51,6 +54,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     });
   }
+});
+
+// Add initialization code
+chrome.runtime.onInstalled.addListener(() => {
+  // Check stored settings and create menu if needed
+  chrome.storage.local.get("analyzeDisplay", (data) => {
+    if (data.analyzeDisplay === "right-click") {
+      createContextMenu();
+    }
+  });
 });
 
 // Optional: handle clicks on the context menu item.
