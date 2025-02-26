@@ -128,7 +128,7 @@ function injectStyles(shadowRoot) {
       height: calc(100% - 20px);
       position: absolute;
       left: 95px; /* Positioned to the right of the truthiness scale */
-      top: 10px;
+      top: 6px; /* Changed from 10px to 8px to move text slightly higher */
     }
     .pink-bubble.neutral-status { background-color: #f0f0f0; }
     .pink-bubble.true-status { background-color: #d4edda; }
