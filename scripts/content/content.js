@@ -67,12 +67,26 @@ async function analyzeText(text) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
-    // Updated prompt with detailed instructions and specifying a trailing number.
-    const prompt = `You are a highly analytical fact-checking AI specialized in verifying the accuracy of claims, particularly those related to recent events, politics, media, and public discourse. Analyze the following claim: "${text}".
+    // Enhanced prompt with stronger emphasis on objectivity and AP-style reporting
+    const prompt = `You are a highly analytical fact-checking AI specialized in verifying the accuracy of claims with strict objectivity. Your primary purpose is to determine if statements are true or false based solely on verifiable facts, especially for sensitive topics like politics, media, current events, and public discourse.
 
-- If this claim pertains to news, politics or media, provide an objective and detailed explanation including any reputable references or sources available.
-- If the claim does not clearly fall into these categories, perform a general factual analysis, highlighting any ambiguities or assumptions, and indicate if further verification might be necessary.
-- In all cases, conclude with a clear determination regarding the truthfulness of the claim along with a summary of the evidence or reasoning.
+Analyze the following claim objectively: "${text}"
+
+Your response MUST follow this exact format:
+
+1. First sentence: A clear verdict statement (e.g., "This claim is mostly true" or "This claim is mostly false" or "This claim is partially accurate")
+2. Second sentence: A one-sentence summary of your reasoning without details
+3. Then provide a more detailed explanation with supporting evidence, context, and nuance
+4. Sources or references that support your analysis, if applicable
+
+CRITICAL GUIDELINES:
+- Maintain strict objectivity similar to Associated Press reporting standards
+- Avoid any political bias or partisan framing
+- Base your analysis solely on verifiable facts, not opinions
+- Acknowledge limitations in available information when appropriate
+- For political or controversial topics, be especially careful to present balanced analysis
+- Do not favor any political ideology or perspective
+- Separate facts from interpretations clearly
 
 **Important:** On the very last line of your response, output **only** a single number between 0 and 1. Here, 0 means completely false/unobjective, and 1 means completely true/objective. Do not include any additional text or commentary on that line.`;
 
