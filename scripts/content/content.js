@@ -31,6 +31,11 @@ document.addEventListener("mouseup", (event) => {
       return;
     }
     
+    // Check if the button is already displayed
+    if (document.body.contains(analyzeButton)) {
+      return; // Do not show the button again if it's already displayed
+    }
+
     // Use setTimeout to check the selection after the browser has processed the click
     setTimeout(() => {
       const selectedText = window.getSelection().toString().trim();
@@ -46,10 +51,15 @@ document.addEventListener("mouseup", (event) => {
       // Only add/move the button if there's still selected text
       analyzeButton.style.left = `${event.pageX}px`;
       analyzeButton.style.top = `${event.pageY}px`;
-      if (!document.body.contains(analyzeButton)) {
-        document.body.appendChild(analyzeButton);
-      }
+      document.body.appendChild(analyzeButton);
     }, 0);
+  }
+});
+
+// Add a click event listener to the document to remove the button when clicking elsewhere
+document.addEventListener("click", (event) => {
+  if (event.target !== analyzeButton && document.body.contains(analyzeButton)) {
+    document.body.removeChild(analyzeButton);
   }
 });
 

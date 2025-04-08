@@ -389,8 +389,8 @@ shadow.innerHTML = `
       <div class="control-group">
         <p>Select Analyze Button Display:</p>
         <div class="button-group">
-          <button id="analyze-display-icon">Popup</button>
-          <button id="analyze-display-right-click" class="active">Right-Click</button>
+          <button id="analyze-display-icon" class="active">Popup</button>
+          <button id="analyze-display-right-click">Right-Click</button>
         </div>
       </div>
     </div>
